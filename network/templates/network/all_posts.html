@@ -1,0 +1,70 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <div class="all_posts_container">
+        <h2>All Posts</h2>
+
+        <form class="add_post_form" id="add_post_form" action="{% url 'add_post' %}" method="post">
+            {% csrf_token %}
+            {{ post_form }}
+            <input type="submit" class="add_btn btn btn-outline-primary" value="Add Post">
+        </form>
+
+        <div class="all_posts">
+            {% for post in page_obj %}
+            <div class="post">
+                <h6 id="username">From: <a href="{% url 'profile_page' post.user_id.pk %}"> {{  post.username }}</a></h6>
+                <span class="post_date">{{ post.date }}</span>
+                <form class="post_form" id="post_form{{post.post}}">
+                    {% csrf_token %}
+                    <textarea name="textarea_{{post.post}}" disabled class="post_body" id="post_body{{post.post}}">{{ post.body }}</textarea>
+                    {% if post.user_id.pk == current_user_id %}
+                    <button type="submit" id="button_{{post.post}}" class="edit_button btn btn-dark" data-post="{{post.post}}">Edit</button>
+                    {% endif %}
+                </form>
+                
+                <!-- Like Form -->
+                <form action="{% url 'like_post' %}" method="post" id="{{post.post}}" class="like_form">
+                    {% csrf_token %}
+                    <input type="hidden" name="csrf-token" value="{{csrf_token}}">
+                    <input type="hidden" name="post_id" value="{{post.post}}">
+                    
+                   
+                    <button type="submit"  id="like_button_{{post.post}}" class="like_button"
+                    data-likes="{{post.likes_list}}" data-user="{{current_user_id}}" data-post="{{post.post}}">                   
+                        Like
+                    </button>
+          
+                    <div class="likes_count">Likes: <strong id="like_count_{{post.post}}" >{{ post.liked.all.count }}</strong></div>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    
+<div class="pagination_container">
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}

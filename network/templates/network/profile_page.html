@@ -1,0 +1,75 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+    <div class="profile_container">
+        <img class="profile_img" src="https://www.pngitem.com/pimgs/m/504-5040528_empty-profile-picture-png-transparent-png.png" alt="profile_img">
+        
+        {% if isFollowing is True  %}
+        <form class="profile_page_tagle_follower_forms" action="{% url 'remove_follower' pro_user_id %}" method="post">
+            {% csrf_token %}
+            {{follow_form}}
+            <input type="submit" class="follow_button btn btn-outline-warning" value="UnFollow">
+        </form>
+        {% elif isFollowing is False %}
+        {% csrf_token %}
+        <form class="profile_page_tagle_follower_forms" action="{% url 'add_follower' pro_user_id %}" method="post">
+            {% csrf_token %}
+            {{follow_form}}
+            <input type="submit" class="follow_button btn btn-info" value="Follow">
+        </form>
+        {% else %}
+        
+        {% endif %}
+        
+        <div class="follow_info">
+            <div class="followers">followers:&nbsp;
+                {% if pro_followers is None %}
+                    0
+                {% else %}
+                    {{pro_followers}}
+                {% endif %}
+            </div>
+            <div class="following">following:&nbsp;
+                {% if pro_following is None %}
+                    0
+                {% else %}
+                    {{pro_following}}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="all_posts_container">
+
+        {% for post in posts %}
+        <div class="post">
+            <h6 id="username">From: {{ post.username }}</h6>
+            <span class="post_date" id="post_date">{{ post.date }}</span>
+            <form class="post_form" id="post_form{{post.post}}">
+                {% csrf_token %}
+                <textarea name="textarea_{{post.post}}" disabled class="post_body" id="post_body{{post.post}}">{{ post.body }}</textarea>
+                {% if post.user_id.pk == current_user_id %}
+                <button type="submit" id="button_{{post.post}}" class="edit_button btn btn-dark" data-post="{{post.post}}">Edit</button>
+                {% endif %}               
+            </form>
+             <!-- Like Form -->
+             <form action="{% url 'like_post' %}" method="post" id="{{post.post}}" class="like_form">
+                {% csrf_token %}
+                <input type="hidden" name="csrf-token" value="{{csrf_token}}">
+                <input type="hidden" name="post_id" value="{{post.post}}">
+                
+               
+                <button type="submit"  id="like_button_{{post.post}}" class="like_button"
+                data-likes="{{post.likes_list}}" data-user="{{current_user_id}}" data-post="{{post.post}}">                   
+                    Like
+                </button>
+      
+                <div class="likes_count">Likes: <strong id="like_count_{{post.post}}" >{{ post.liked.all.count }}</strong></div>
+            </form>
+        {% endfor %}
+
+    </div>
+{% endblock %}
